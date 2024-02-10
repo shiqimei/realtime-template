@@ -43,7 +43,13 @@ schemaComposer.Subscription.addFields({
     type: 'ChangeNotification',
     subscribe: () => pubsub.asyncIterator([DATA_CHANGED_TOPIC]),
     resolve: payload => {
-      return payload.dataChanged
+      return {
+        _id: payload._id ? payload._id._data : null,
+        operationType: payload.operationType,
+        fullDocument: payload.fullDocument ? JSON.stringify(payload.fullDocument) : null,
+        ns: payload.ns ? `${payload.ns.db}.${payload.ns.coll}` : null,
+        documentKey: payload.documentKey ? payload.documentKey._id.toString() : null
+      }
     }
   }
 })
