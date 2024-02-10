@@ -32,7 +32,7 @@ schemaComposer.createObjectTC({
   fields: {
     _id: 'ID',
     operationType: 'String',
-    fullDocument: 'String',
+    fullDocument: PostTC.getType(),
     ns: 'String',
     documentKey: 'String'
   }
@@ -46,7 +46,7 @@ schemaComposer.Subscription.addFields({
       return {
         _id: payload._id ? payload._id._data : null,
         operationType: payload.operationType,
-        fullDocument: payload.fullDocument ? JSON.stringify(payload.fullDocument) : null,
+        fullDocument: payload.fullDocument ? payload.fullDocument : null,
         ns: payload.ns ? `${payload.ns.db}.${payload.ns.coll}` : null,
         documentKey: payload.documentKey ? payload.documentKey._id.toString() : null
       }
