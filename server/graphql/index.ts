@@ -1,9 +1,8 @@
-import { ApolloServer } from 'apollo-server-express'
-import { typeDefs } from './schema'
-import { resolvers } from './resolvers'
-export { pubsub } from './resolvers'
+import { ApolloServer } from '@apollo/server'
+import { graphqlSchema, pubsub } from './schema'
+
+export { graphqlSchema, pubsub }
 
 export const apolloServer = new ApolloServer({
-  typeDefs,
-  resolvers
+  schema: graphqlSchema
 })

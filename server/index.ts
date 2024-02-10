@@ -1,7 +1,12 @@
 import next from 'next'
-import { createMongoConnection } from './mongo'
-import { apolloServer, pubsub } from './graphql'
+import { createServer } from 'http'
+import { createMongooseConnection } from './mongo'
+import { apolloServer, pubsub, graphqlSchema } from './graphql'
 import express from 'express'
+import { useServer } from 'graphql-ws/lib/use/ws'
+import { WebSocketServer } from 'ws'
+import { expressMiddleware } from '@apollo/server/express4'
+import cors from 'cors'
 
 const dev = process.env.NODE_ENV !== 'production'
 const hostname = 'localhost'
@@ -10,10 +15,12 @@ const app = next({ dev, hostname, port })
 const handle = app.getRequestHandler()
 
 app.prepare().then(async () => {
-  const server = express()
+  const app = express()
+  const server = createServer(app)
+
   const database = 'realtime-template'
   const [changeStreams] = await Promise.all([
-    await createMongoConnection(process.env.MONGO_URI!, database),
+    await createMongooseConnection(process.env.MONGO_URI!, database),
     await apolloServer.start()
   ])
   for (const changeStream of changeStreams) {
@@ -22,13 +29,16 @@ app.prepare().then(async () => {
     })
   }
 
-  apolloServer.applyMiddleware({ app: server, path: '/api/graphql' })
+  const path = '/api/graphql'
+  app.use(path, cors<cors.CorsRequest>(), express.json(), expressMiddleware(apolloServer))
+  const wsServer = new WebSocketServer({ server, path })
+  useServer({ schema: graphqlSchema }, wsServer)
 
-  server.all('*', (req, res) => {
+  app.all('*', (req, res) => {
     return handle(req, res)
   })
 
-  server.listen(port, () => {
+  app.listen(port, () => {
     console.log(`> Ready on http://localhost:${port}`)
   })
 })
