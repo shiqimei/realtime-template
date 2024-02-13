@@ -14,6 +14,7 @@ import cors from 'cors'
 const dev = process.env.NODE_ENV !== 'production'
 const hostname = 'localhost'
 const port = 3000
+const host = '0.0.0.0'
 const app = next({ dev, hostname, port })
 const handle = app.getRequestHandler()
 
@@ -58,7 +59,7 @@ app.prepare().then(async () => {
     return handle(req, res)
   })
 
-  server.listen(port, () => {
-    console.log(`> Ready on http://localhost:${port}`)
+  server.listen(port, host, () => {
+    console.log(`> Ready on http://${host}:${port}`)
   })
 })
